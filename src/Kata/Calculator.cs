@@ -22,6 +22,12 @@ namespace Kata
             {
                 throw new Exception($@"negatives not allowed: {string.Join(", ", negatives)}");
             }
+
+            var numbersLessThanThousandOne = numbers.Where(x => x < 1001);
+            if (numbersLessThanThousandOne.Any())
+            {
+                return numbersLessThanThousandOne.Sum();
+            }
             return numbers.Sum();
  
         }
