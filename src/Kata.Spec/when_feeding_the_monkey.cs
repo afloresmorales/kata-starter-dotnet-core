@@ -152,6 +152,18 @@ namespace Kata.Spec
         static Calculator _systemUnderTest;
         static int _result;
     }
-//    10. Given the user input is multiple numbers with a custom multi-character delimiter when calculating the sum then it should return the sum of all the numbers. (example: “//[***]\n1***2***3” should return 6)
+
+    public class when_user_input_multiple_custom_delimiter
+    {
+        Establish _context = () =>
+        {
+            _systemUnderTest = new Calculator();
+        };
+
+        Because of = () => { _result = _systemUnderTest.Add("//[*][%]\n1*2%3"); };
+        It should_return_sum_of_all = () => { _result.Should().Be(6); };
+        static Calculator _systemUnderTest;
+        static int _result;
+    }
 //    11. Given the user input is multiple numbers with multiple custom delimiters when calculating the sum then it should return the sum of all the numbers. (example “//[*][%]\n1*2%3” should return 6)
 }

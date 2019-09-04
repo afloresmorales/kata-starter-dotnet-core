@@ -15,7 +15,7 @@ namespace Kata
             if (s.Contains("//"))
             {
                 var str = s.Split("\n");
-                separator = new[] {str.First().Replace("//", "")};
+                separator = new[] {str.First().Replace("//", "").Replace("[","").Replace("]","")};
                 s = str.Last();
 
             }
