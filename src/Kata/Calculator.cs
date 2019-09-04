@@ -20,8 +20,14 @@ namespace Kata
 
             }
             var numbers = s.Split(separator, StringSplitOptions.None).Select(int.Parse);
+            var negatives = numbers.Where(x => x < 0);
 
-         return numbers.Sum();
+            if (negatives.Any())
+            {
+                throw new Exception("negatives not allowed: -2");
+            }
+
+            return numbers.Sum();
         }
     }
 }
