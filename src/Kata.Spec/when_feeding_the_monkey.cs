@@ -1,5 +1,7 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Common;
 using Machine.Specifications;
+using System;
 
 namespace Kata.Spec
 {
@@ -16,15 +18,86 @@ namespace Kata.Spec
         It should_have_the_food_in_its_belly = () =>
             _systemUnderTest.Belly.Should().Contain("banana");
     }
-    //    1. Given the user input is empty when calculating the sum then it should return zero.
-//    2. Given the user input is one number when calculating the sum then it should return the same number. (example "3" should equal 3)
-//    3. Given the user input is two numbers when calculating the sum then it should return the sum of those numbers. (example "1,2" should equal 3)
-//    4. Given the user input is an unknown amount of numbers when calculating the sum then it should return the sum of all the numbers. (example "1,2,3" should equal 6)
-//    5. Given the user input is multiple numbers with new line and comma delimiters when calculating the sum then it should return the sum of all the numbers. (example "1\n2,3" should equal 6)
-//    6. Given the user input is multiple numbers with a custom single-character delimiter when calculating the sum then it should return the sum of all the numbers. (example “//;\n1;2” should return 3)
-//    7. Given the user input contains one negative number when calculating the sum then it should throw an exception "negatives not allowed: x" (where x is the negative number).
-//    8. Given the user input contains multiple negative numbers mixed with positive numbers when calculating the sum then it should throw an exception "negatives not allowed: x, y, z" (where x, y, z are only the negative numbers). 
-//    9. Given the user input contains numbers larger than 1000 when calculating the sum it should only sum the numbers less than 1001. (example 2 + 1001 = 2)
-//    10. Given the user input is multiple numbers with a custom multi-character delimiter when calculating the sum then it should return the sum of all the numbers. (example: “//[***]\n1***2***3” should return 6)
-//    11. Given the user input is multiple numbers with multiple custom delimiters when calculating the sum then it should return the sum of all the numbers. (example “//[*][%]\n1*2%3” should return 6)
+
+    public class when_airplane_requests_permission
+    {
+        Establish _context = () =>
+        {
+            _systemUnderTest = new Airport();
+        };
+
+        Because of = () => { _result = _systemUnderTest.Action(); };
+        It should_return_landing_track_assingment = () => { _result.Should().Be(null); };
+        static Airport _systemUnderTest;
+    }
+    interface IMediator
+    {
+        void Notify(object sender, string specificEvent);
+    }
+
+    class ConcreteMediator : IMediator
+    {
+        Airplane _airplane;
+        LandingTrack _landingTrack;
+
+        public ConcreteMediator(Airplane airplane, LandingTrack landingTrack)
+        {
+            this._airplane = airplane;
+            this._airplane.SetMediator(this);
+            this._landingTrack = landingTrack;
+            this._landingTrack.SetMediator(this);
+        }
+
+        public void Notify(object sender, string specificEvent)
+        {
+            if (specificEvent == "Airplane")
+            {
+                Console.WriteLine("Mediator reacts on Airplane and triggers following Route");
+                this._landingTrack.AssignLandingTrackForAirplanes();
+            }
+        }
+    }
+
+    class ControlTowerBase
+    {
+        protected IMediator _mediator;
+
+        public ControlTowerBase(IMediator mediator = null)
+        {
+            this._mediator = mediator;
+        }
+
+        public void SetMediator(IMediator mediator)
+        {
+            this._mediator = mediator;
+        }
+    }
+    class Airport
+    {
+        static void Main(string[] arguments)
+        {
+            Airplane airplane = new Airplane();
+            LandingTrack landingTrack = new LandingTrack();
+            new ConcreteMediator(airplane, landingTrack);
+            
+            airplane.AirplaneRequestLandingPermission();
+        }
+    }
+
+    internal class LandingTrack : ControlTowerBase
+    {
+        public string AssignLandingTrackForAirplanes()
+        {
+            return "Airplane should land in track #2.";
+        }
+    }
+
+
+    internal class Airplane : ControlTowerBase
+    {
+        public void AirplaneRequestLandingPermission()
+        {
+            this._mediator.Notify(this,"Airplane");
+        }
+    }
 }
