@@ -20,6 +20,21 @@ namespace Kata.Spec
         static LandingTrackAssignation _landingTrackAssignation;
     }
 
+    public class when_control_tower_assigns_landing_track
+    {
+        Establish _context = () =>
+        {
+            _airplane = new Airplane();
+            _landingTrack = new LandingTrackAssignation();
+            new ConcreteMediator(_airplane, _landingTrack);
+        };
+
+        Because of = () => { _landingTrack.NotifyEta(); };
+        It should_notify_client_eta_to_family_members = () => { _landingTrack.eta.Should().Be("eta: 30 minutes"); };
+        It should_notify_passengers_to_keep_phones_off = () => { _airplane.phoneCommunication.Should().Be("Keep phones off."); };
+        static Airplane _airplane;
+        static LandingTrackAssignation _landingTrack;
+    }
 
     internal interface IMediator
     {
@@ -37,11 +52,17 @@ namespace Kata.Spec
             this._landingTrack.SetMediator(this);
         }
 
-        public void Notify(object sender, string aircraft)
+        public void Notify(object sender, string evento)
         {
-            if (aircraft == "Boeing 777")
+            if (evento == "Boeing 777")
             {
                 this._landingTrack.AssignLandingTrack();
+            }
+
+            if (evento == "eta")
+            {
+                this._landingTrack.ConfirmEta();
+                this._airplane.KeepPhonesOff();
             }
         }
     }
@@ -49,18 +70,35 @@ namespace Kata.Spec
     internal class LandingTrackAssignation : BaseComponent
     {
         public string assignedTrack = "";
+        public string eta = "";
         public void AssignLandingTrack()
         {
             assignedTrack = "Land in track #3";
             
         }
+
+        public void NotifyEta()
+        {
+            this._mediator.Notify(this,"eta");
+        }
+
+        public void ConfirmEta()
+        {
+            eta = "eta: 30 minutes";
+        }
     }
 
     internal class Airplane : BaseComponent
     {
+        public string phoneCommunication = "";
         public void NotifyLandingApproximation()
         {
             this._mediator.Notify(this, "Boeing 777");
+        }
+
+        public void KeepPhonesOff()
+        {
+            phoneCommunication = "Keep phones off.";
         }
     }
 
