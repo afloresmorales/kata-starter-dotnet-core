@@ -3,28 +3,116 @@ using Machine.Specifications;
 
 namespace Kata.Spec
 {
-    public class when_feeding_the_monkey
+    public class when_airplane_reports_to_control_tower
     {
-        static Monkey _systemUnderTest;
-        
-        Establish context = () => 
-            _systemUnderTest = new Monkey();
+        Establish _context = () =>
+        {
+            _airplane = new Airplane();
+            _airport = new Airport();
+            new ConcreteMediator(_airplane, _airport);
+        };
 
-        Because of = () => 
-            _systemUnderTest.Eat("banana");
-
-        It should_have_the_food_in_its_belly = () =>
-            _systemUnderTest.Belly.Should().Contain("banana");
+        Because of = () => { _airplane.ReportProximity(); };
+        It should_announce_eta = () => { _airport.Eta.Should().Be("Flight #123 will arrive in 30 minutes."); };
+        static Airplane _airplane;
+        static Airport _airport;
     }
-    //    1. Given the user input is empty when calculating the sum then it should return zero.
-//    2. Given the user input is one number when calculating the sum then it should return the same number. (example "3" should equal 3)
-//    3. Given the user input is two numbers when calculating the sum then it should return the sum of those numbers. (example "1,2" should equal 3)
-//    4. Given the user input is an unknown amount of numbers when calculating the sum then it should return the sum of all the numbers. (example "1,2,3" should equal 6)
-//    5. Given the user input is multiple numbers with new line and comma delimiters when calculating the sum then it should return the sum of all the numbers. (example "1\n2,3" should equal 6)
-//    6. Given the user input is multiple numbers with a custom single-character delimiter when calculating the sum then it should return the sum of all the numbers. (example “//;\n1;2” should return 3)
-//    7. Given the user input contains one negative number when calculating the sum then it should throw an exception "negatives not allowed: x" (where x is the negative number).
-//    8. Given the user input contains multiple negative numbers mixed with positive numbers when calculating the sum then it should throw an exception "negatives not allowed: x, y, z" (where x, y, z are only the negative numbers). 
-//    9. Given the user input contains numbers larger than 1000 when calculating the sum it should only sum the numbers less than 1001. (example 2 + 1001 = 2)
-//    10. Given the user input is multiple numbers with a custom multi-character delimiter when calculating the sum then it should return the sum of all the numbers. (example: “//[***]\n1***2***3” should return 6)
-//    11. Given the user input is multiple numbers with multiple custom delimiters when calculating the sum then it should return the sum of all the numbers. (example “//[*][%]\n1*2%3” should return 6)
+
+    public class when_airport_welcomes_airplane
+    {
+        Establish _context = () =>
+        {
+            _airplane = new Airplane();
+            _airport = new Airport();
+            new ConcreteMediator(_airplane, _airport);
+        };
+
+        Because of = () => {_airport.WelcomePassengers(); };
+        It should_announce_welcome_message = () => { _airplane.WelcomeAnnouncement.Should().Be("Aeropuerto Ramon Villeda Morales welcomes you."); };
+
+        It should_confirm_eta = () => { _airport.SpeakerMessage.Should().Be("Flight #123 arrives in 25 minutes."); };
+        static Airplane _airplane;
+        static Airport _airport;
+    }
+
+     class ConcreteMediator : IControlTowerMediator
+     {
+         Airplane _airplane;
+         Airport _airport;
+        public ConcreteMediator(Airplane airplane, Airport airport)
+        {
+            this._airplane = airplane;
+            this._airplane.SetMediator(this);
+            this._airport = airport;
+            this._airport.SetMediator(this);
+        }
+
+        public void Notify(object sender, string ev)
+        {
+            if (ev == "Airplane")
+            {
+                this._airport.AnnounceEta();
+            }
+
+            if (ev == "Welcome")
+            {
+                this._airplane.ReceiveWelcome();
+                this._airport.NotifyAirportPeople();
+            }
+        }
+    }
+
+    public class Airport : BaseComponent
+    {
+        public string Eta = "";
+        public string SpeakerMessage = "";
+        public void AnnounceEta()
+        {
+            Eta = "Flight #123 will arrive in 30 minutes.";
+        }
+
+        public void WelcomePassengers()
+        {
+            this._mediator.Notify(this, "Welcome");
+        }
+
+        public void NotifyAirportPeople()
+        {
+            SpeakerMessage = "Flight #123 arrives in 25 minutes.";
+        }
+    }
+
+    public class BaseComponent
+    {
+        protected IControlTowerMediator _mediator;
+
+        public BaseComponent(IControlTowerMediator mediator = null)
+        {
+            this._mediator = mediator;
+        }
+
+        public void SetMediator(IControlTowerMediator mediator)
+        {
+            this._mediator = mediator;
+        }
+    }
+
+    public interface IControlTowerMediator
+    {
+        void Notify(object sender, string ev);
+    }
+
+    public class Airplane : BaseComponent
+    {
+        public string WelcomeAnnouncement = "";
+        public void ReportProximity()
+        {
+            this._mediator.Notify(this, "Airplane");
+        }
+
+        public void ReceiveWelcome()
+        {
+            WelcomeAnnouncement = "Aeropuerto Ramon Villeda Morales welcomes you.";
+        }
+    }
 }
